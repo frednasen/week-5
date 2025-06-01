@@ -1,32 +1,27 @@
-import { Card } from '@/components/ui/card'
+import { cn } from "@/lib/utils"
 
 interface MetricCardProps {
   label: string
   value: string
   isSelected?: boolean
   onClick?: () => void
-  className?: string
+  variant?: 'default' | 'cost' | 'performance' | 'conversion'
 }
 
-export function MetricCard({ 
-  label, 
-  value, 
-  isSelected, 
-  onClick,
-  className = ''
-}: MetricCardProps) {
+export function MetricCard({ label, value, isSelected, onClick, variant = 'default' }: MetricCardProps) {
   return (
-    <Card
-      className={`
-        p-4 transition-all
-        ${onClick ? 'cursor-pointer hover:ring-2 hover:ring-orange-500/50' : ''}
-        ${isSelected ? 'ring-2 ring-orange-500' : ''}
-        ${className}
-      `}
+    <div
+      className={cn(
+        "rounded-lg border p-4 cursor-pointer transition-all",
+        isSelected ? "border-primary shadow-md" : "border-border hover:border-primary/50",
+        variant === 'cost' && "bg-red-50 border-red-200 hover:border-red-300",
+        variant === 'performance' && "bg-green-50 border-green-200 hover:border-green-300",
+        variant === 'conversion' && "bg-yellow-50 border-yellow-200 hover:border-yellow-300"
+      )}
       onClick={onClick}
     >
-      <div className="text-sm font-medium text-gray-500">{label}</div>
-      <div className="text-2xl font-bold mt-1 text-gray-900">{value}</div>
-    </Card>
+      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-2xl font-bold mt-1">{value}</div>
+    </div>
   )
 } 

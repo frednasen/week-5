@@ -25,6 +25,7 @@ import {
     ArrowUpDown,
     Sparkles
 } from "lucide-react"
+import { CampaignFilter } from '@/components/CampaignFilter'
 
 type SortField = 'campaign' | 'adGroup' | 'impr' | 'clicks' | 'cost' | 'conv' | 'value' | 'cpc' | 'ctr' | 'convRate' | 'cpa' | 'roas';
 type SortDirection = 'asc' | 'desc';
@@ -54,11 +55,26 @@ interface AggregatedAdGroup {
 }
 
 export default function AdGroupsPage() {
-    const { settings, fetchedData, dataError, isDataLoading } = useSettings()
+    const { settings, fetchedData, dataError, isDataLoading, campaigns } = useSettings()
 
     const [allAdGroupsData, setAllAdGroupsData] = useState<AdGroupMetric[]>([]);
     const [sortField, setSortField] = useState<SortField>('cost');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+    const [selectedCampaignId, setSelectedCampaignId] = useState<string>('')
+    const [campaignNameFilter, setCampaignNameFilter] = useState('')
+
+    // Filter campaigns based on name
+    const filteredCampaigns = useMemo(() => {
+        if (!campaigns) return [];
+        const words = campaignNameFilter
+            .toLowerCase()
+            .split(' ')
+            .filter(Boolean);
+        if (words.length === 0) return campaigns;
+        return campaigns.filter(campaign =>
+            words.every(word => campaign.name.toLowerCase().includes(word))
+        );
+    }, [campaigns, campaignNameFilter]);
 
     useEffect(() => {
         if (fetchedData?.adGroups) {
@@ -70,7 +86,12 @@ export default function AdGroupsPage() {
     const aggregatedAdGroups = useMemo(() => {
         const grouped: Record<string, AggregatedAdGroup> = {};
 
-        allAdGroupsData.forEach(item => {
+        // Filter data by selected campaign if one is selected
+        const filteredData = selectedCampaignId
+            ? allAdGroupsData.filter(item => item.campaignId === selectedCampaignId)
+            : allAdGroupsData;
+
+        filteredData.forEach(item => {
             const key = `${item.campaign}|${item.adGroup}`;
 
             if (!grouped[key]) {
@@ -106,7 +127,7 @@ export default function AdGroupsPage() {
             cpa: group.conv > 0 ? group.cost / group.conv : 0,
             roas: group.cost > 0 ? group.value / group.cost : 0
         }));
-    }, [allAdGroupsData]);
+    }, [allAdGroupsData, selectedCampaignId]);
 
     const sortedAdGroups = useMemo(() => {
         return [...aggregatedAdGroups].sort((a, b) => {
@@ -134,9 +155,14 @@ export default function AdGroupsPage() {
         }, { impressions: 0, clicks: 0, cost: 0, conversions: 0, value: 0 });
     }, [aggregatedAdGroups]);
 
+    // Update chart data to filter by selected campaign
     const chartData = useMemo(() => {
         const dailyData: Record<string, ChartData> = {};
-        allAdGroupsData.forEach(item => {
+        const filteredData = selectedCampaignId
+            ? allAdGroupsData.filter(item => item.campaignId === selectedCampaignId)
+            : allAdGroupsData;
+
+        filteredData.forEach(item => {
             const dateStr = item.date.substring(0, 10);
             if (!dailyData[dateStr]) {
                 dailyData[dateStr] = { date: dateStr, clicks: 0, cost: 0, impressions: 0, conv: 0, value: 0 };
@@ -146,10 +172,9 @@ export default function AdGroupsPage() {
             dailyData[dateStr].impressions += item.impr;
             dailyData[dateStr].conv += item.conv;
             dailyData[dateStr].value += item.value;
-
         });
         return Object.values(dailyData).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [allAdGroupsData]);
+    }, [allAdGroupsData, selectedCampaignId]);
 
     if (dataError) {
         return (
@@ -295,9 +320,18 @@ export default function AdGroupsPage() {
                 {/* Chart */}
                 <Card className="mb-12 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-                        <div className="flex items-center">
-                            <BarChart3 className="w-6 h-6 text-blue-600 mr-3" />
-                            <CardTitle className="text-xl text-gray-800">Performance Over Time</CardTitle>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <BarChart3 className="w-6 h-6 text-blue-600 mr-3" />
+                                <CardTitle className="text-xl text-gray-800">
+                                    Performance Over Time
+                                    {selectedCampaignId && (
+                                        <span className="ml-2 text-sm font-normal text-gray-600">
+                                            - {campaigns?.find(c => c.id === selectedCampaignId)?.name}
+                                        </span>
+                                    )}
+                                </CardTitle>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
@@ -340,21 +374,21 @@ export default function AdGroupsPage() {
                                     <Line
                                         yAxisId="left"
                                         type="monotone"
-                                        dataKey="clicks"
-                                        stroke="#3b82f6"
+                                        dataKey="conv"
+                                        stroke="#8b5cf6"
                                         strokeWidth={3}
-                                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, fill: '#fff' }}
-                                        name="Clicks"
+                                        dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                                        activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2, fill: '#fff' }}
+                                        name="Conversions"
                                     />
                                     <Line
                                         yAxisId="right"
                                         type="monotone"
                                         dataKey="cost"
-                                        stroke="#10b981"
+                                        stroke="#ef4444"
                                         strokeWidth={3}
-                                        dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                                        activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2, fill: '#fff' }}
+                                        dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                                        activeDot={{ r: 6, stroke: '#ef4444', strokeWidth: 2, fill: '#fff' }}
                                         name="Cost"
                                     />
                                 </LineChart>
@@ -369,6 +403,15 @@ export default function AdGroupsPage() {
                     </CardContent>
                 </Card>
 
+                <CampaignFilter
+                    campaigns={filteredCampaigns}
+                    selectedId={selectedCampaignId}
+                    onSelect={setSelectedCampaignId}
+                    onFilterChange={setCampaignNameFilter}
+                    filterValue={campaignNameFilter}
+                />
+
+                <div className="rounded-md border">
                 {/* Table */}
                 {(!isDataLoading && sortedAdGroups.length === 0) ? (
                     <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
@@ -443,6 +486,7 @@ export default function AdGroupsPage() {
                         </div>
                     </Card>
                 )}
+                </div>
             </div>
         </div>
     );

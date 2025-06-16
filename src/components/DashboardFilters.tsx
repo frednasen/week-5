@@ -1,5 +1,6 @@
 'use client'
 
+import './ui/calendar.css'
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -8,7 +9,6 @@ import type { Campaign } from "@/lib/types"
 import { DateRange } from "react-day-picker"
 import { useState } from "react"
 import { format, startOfToday, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 
 interface DashboardFiltersProps {
   onCampaignNameChange: (name: string) => void
@@ -35,12 +35,14 @@ const quickSelects = [
   },
 ]
 
-export function DashboardFilters({ onCampaignNameChange, onDateRangeChange, dateRange }: DashboardFiltersProps) {
+export function DashboardFilters({ onCampaignNameChange, onDateRangeChange, dateRange, campaigns, selectedCampaignId, onSelectCampaign }: DashboardFiltersProps) {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(dateRange)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const handleDateSelect = (range: DateRange | undefined) => {
     setSelectedRange(range)
     onDateRangeChange(range)
+    setIsPopoverOpen(false)
   }
 
   const handleQuickSelect = (range: DateRange) => {
@@ -60,59 +62,54 @@ export function DashboardFilters({ onCampaignNameChange, onDateRangeChange, date
       : 'Select date range'
 
   return (
-    <Card className="p-1 mb-4 max-w-7xl ml-0">
-      <div className="flex flex-col md:flex-row gap-2 items-start md:items-center">
-        {/* Left: Campaign Filters */}
-        <div className="flex-1 min-w-0">
-          <div className="text-base font-semibold mb-1 ml-1">Campaign Filter</div>
-          <Input
-            placeholder="Enter campaign name or keyword to filter"
-            onChange={(e) => onCampaignNameChange(e.target.value)}
-            className="w-full h-8 text-sm"
-          />
+    <div className="space-y-4">
+      {/* Campaign Filter and Select Section */}
+      <Card className="p-4">
+        <div className="space-y-4">
+          <div>
+            <div className="text-base font-semibold mb-2">Campaign Filter</div>
+            <Input
+              placeholder="Enter campaign name or keyword to filter"
+              onChange={(e) => onCampaignNameChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <CampaignSelect
+              campaigns={campaigns}
+              selectedId={selectedCampaignId}
+              onSelect={onSelectCampaign}
+            />
+          </div>
         </div>
-        {/* Right: Date Range Picker (Calendar) */}
-        <div className="w-full md:w-auto flex flex-col items-end md:items-end">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="flex items-center w-full px-2 py-1 border rounded bg-muted text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-                type="button"
-              >
-                {rangeLabel}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 mt-1 right-0 ml-auto">
-              <div className="flex flex-row gap-2">
-                {/* Quick Select Buttons */}
-                <div className="flex flex-col gap-0.5 p-1 border-r bg-background">
-                  {quickSelects.map(q => (
-                    <button
-                      key={q.label}
-                      onClick={() => handleQuickSelect(q.getRange())}
-                      className="px-1.5 py-0.5 border rounded text-xs bg-background hover:bg-accent"
-                    >
-                      {q.label}
-                    </button>
-                  ))}
-                  <button onClick={handleClear} className="mt-1 text-xs text-muted-foreground hover:underline">Clear</button>
-                </div>
-                {/* Calendar */}
-                <div className="p-1">
-                  <Calendar
-                    mode="range"
-                    selected={selectedRange}
-                    onSelect={handleDateSelect}
-                    numberOfMonths={2}
-                    className="rounded-md border shadow-sm"
-                    defaultMonth={selectedRange?.from || new Date()}
-                  />
-                </div>
+      </Card>
+
+      {/* Calendar Button and Popover (custom, not using Popover component) */}
+      <div>
+        <div className="relative inline-block">
+          <button
+            className="flex items-center justify-center px-4 py-2 border rounded bg-muted text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary min-w-[180px]"
+            type="button"
+            onClick={() => setIsPopoverOpen((open) => !open)}
+          >
+            {rangeLabel}
+          </button>
+          {isPopoverOpen && (
+            <div className="w-auto p-0 mt-1 z-[9999] absolute">
+              <div style={{ maxWidth: 340 }}>
+                <Calendar
+                  mode="range"
+                  selected={selectedRange}
+                  onSelect={handleDateSelect}
+                  numberOfMonths={2}
+                  className="rounded-md border shadow-sm dashboard-calendar-compact"
+                  defaultMonth={selectedRange?.from || new Date()}
+                />
               </div>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
         </div>
       </div>
-    </Card>
+    </div>
   )
 } 

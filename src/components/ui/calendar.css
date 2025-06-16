@@ -1,0 +1,21 @@
+/* Compact calendar for dashboard sidebar */
+.dashboard-calendar-compact {
+  font-size: 0.85rem;
+  max-width: 340px;
+}
+.dashboard-calendar-compact .rdp {
+  padding: 0.5rem;
+}
+.dashboard-calendar-compact .rdp-months {
+  gap: 0.2rem;
+}
+.dashboard-calendar-compact .rdp-month {
+  min-width: 140px;
+  max-width: 160px;
+}
+.dashboard-calendar-compact .rdp-caption_label {
+  font-size: 0.95em;
+}
+.dashboard-calendar-compact .rdp-day {
+  padding: 0.22em 0.32em;
+} 

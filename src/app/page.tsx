@@ -79,10 +79,9 @@ function aggregateByDate(metrics: AdMetric[]): AdMetric[] {
 
 export default function DashboardPage() {
     const { settings, fetchedData, dataError, isDataLoading, campaigns } = useSettings()
-    const [selectedMetrics, setSelectedMetrics] = useState<[DisplayMetric, DisplayMetric]>(['cost', 'value'])
+    const [selectedMetrics, setSelectedMetrics] = useState<[DisplayMetric, DisplayMetric]>(['conv', 'value'])
     const [selectedCampaignId, setSelectedCampaignId] = useState<string>('')
     const [campaignNameFilter, setCampaignNameFilter] = useState('')
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
     // Filter campaigns based on name
@@ -173,53 +172,55 @@ export default function DashboardPage() {
     return (
         <DashboardLayout error={dataError ? 'Failed to load data. Please check your Sheet URL.' : undefined}>
             <div className="space-y-6">
-                <DashboardFilters 
-                    onCampaignNameChange={handleCampaignNameFilterChange}
-                    onDateRangeChange={setDateRange}
-                    dateRange={dateRange}
-                    campaigns={filteredCampaigns}
-                    selectedCampaignId={selectedCampaignId}
-                    onSelectCampaign={setSelectedCampaignId}
-                />
-
-                <CampaignSelect
-                    campaigns={filteredCampaigns}
-                    selectedId={selectedCampaignId}
-                    onSelect={setSelectedCampaignId}
-                />
-
-                {[1, 2].map(row => (
-                    <div key={row} className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                        {Object.entries(metricConfig)
-                            .filter(([_, config]) => config.row === row)
-                            .map(([key, config]) => (
-                                <MetricCard
-                                    key={key}
-                                    label={config.label}
-                                    value={config.format(totals[key as DisplayMetric], settings.currency)}
-                                    isSelected={selectedMetrics.includes(key as DisplayMetric)}
-                                    onClick={() => handleMetricClick(key as DisplayMetric)}
-                                    variant={config.variant}
-                                />
-                            ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column: Filters */}
+                    <div className="lg:col-span-1">
+                        <DashboardFilters 
+                            onCampaignNameChange={handleCampaignNameFilterChange}
+                            onDateRangeChange={setDateRange}
+                            dateRange={dateRange}
+                            campaigns={filteredCampaigns}
+                            selectedCampaignId={selectedCampaignId}
+                            onSelectCampaign={setSelectedCampaignId}
+                        />
                     </div>
-                ))}
 
-                <MetricsChart
-                    data={filteredDailyMetrics}
-                    metric1={{
-                        key: selectedMetrics[0],
-                        label: metricConfig[selectedMetrics[0]].label,
-                        color: COLORS.primary,
-                        format: (v: number) => metricConfig[selectedMetrics[0]].format(v, settings.currency)
-                    }}
-                    metric2={{
-                        key: selectedMetrics[1],
-                        label: metricConfig[selectedMetrics[1]].label,
-                        color: COLORS.secondary,
-                        format: (v: number) => metricConfig[selectedMetrics[1]].format(v, settings.currency)
-                    }}
-                />
+                    {/* Right Column: Metrics and Charts */}
+                    <div className="lg:col-span-2">
+                        {[1, 2].map(row => (
+                            <div key={row} className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+                                {Object.entries(metricConfig)
+                                    .filter(([_, config]) => config.row === row)
+                                    .map(([key, config]) => (
+                                        <MetricCard
+                                            key={key}
+                                            label={config.label}
+                                            value={config.format(totals[key as DisplayMetric], settings.currency)}
+                                            isSelected={selectedMetrics.includes(key as DisplayMetric)}
+                                            onClick={() => handleMetricClick(key as DisplayMetric)}
+                                            variant={config.variant}
+                                        />
+                                    ))}
+                            </div>
+                        ))}
+
+                        <MetricsChart
+                            data={filteredDailyMetrics}
+                            metric1={{
+                                key: selectedMetrics[0],
+                                label: metricConfig[selectedMetrics[0]].label,
+                                color: COLORS.primary,
+                                format: (v: number) => metricConfig[selectedMetrics[0]].format(v, settings.currency)
+                            }}
+                            metric2={{
+                                key: selectedMetrics[1],
+                                label: metricConfig[selectedMetrics[1]].label,
+                                color: COLORS.secondary,
+                                format: (v: number) => metricConfig[selectedMetrics[1]].format(v, settings.currency)
+                            }}
+                        />
+                    </div>
+                </div>
             </div>
         </DashboardLayout>
     )

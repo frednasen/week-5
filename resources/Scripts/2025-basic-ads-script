@@ -1,0 +1,69 @@
+function main() {
+    // Replace this URL with your Google Sheet URL
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/15duGiuzKxPRON1Gb5sqS-STzlrCMrwwo4uGHQRtLmWI/edit?gid=1772731559#gid=1772731559';
+  
+    const sheet = SpreadsheetApp.openByUrl(SHEET_URL);
+    
+    const sheets = {
+      'Campaigns': { headers: ['Campaign', 'Impressions', 'Clicks', 'CTR', 'Cost', 'Conversions', 'Cost/Conv'] },
+      'Ad Groups': { headers: ['Campaign', 'Ad Group', 'Impressions', 'Clicks', 'CTR', 'Cost', 'Conversions', 'Cost/Conv'] },
+      'Keywords': { headers: ['Campaign', 'Ad Group', 'Keyword', 'Match Type', 'Impressions', 'Clicks', 'CTR', 'Cost', 'Conversions', 'Cost/Conv'] }
+    };
+  
+    // Setup sheets and delete default
+    Object.keys(sheets).forEach(name => {
+      sheets[name].sheet = sheet.getSheetByName(name) || sheet.insertSheet(name);
+      sheets[name].sheet.clear();
+      sheets[name].sheet.getRange(1, 1, 1, sheets[name].headers.length).setValues([sheets[name].headers]);
+      sheets[name].sheet.getRange("1:1").setFontWeight("bold");
+      sheets[name].sheet.setFrozenRows(1);
+    });
+  
+    // GAQL queries
+    const queries = {
+      'Campaigns': "SELECT campaign.name, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros, metrics.conversions FROM campaign WHERE segments.date DURING LAST_30_DAYS AND metrics.cost_micros > 0 ORDER BY metrics.cost_micros DESC",
+      'Ad Groups': "SELECT campaign.name, ad_group.name, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros, metrics.conversions FROM ad_group WHERE segments.date DURING LAST_30_DAYS AND metrics.cost_micros > 0 ORDER BY metrics.cost_micros DESC",
+      'Keywords': "SELECT campaign.name, ad_group.name, ad_group_criterion.keyword.text, ad_group_criterion.keyword.match_type, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros, metrics.conversions FROM keyword_view WHERE segments.date DURING LAST_30_DAYS AND metrics.cost_micros > 0 ORDER BY metrics.cost_micros DESC"
+    };
+  
+    // Execute queries and write data
+    Object.keys(queries).forEach(type => {
+      const rows = [];
+      const query = AdsApp.search(queries[type]);
+      
+      while (query.hasNext()) {
+        const row = query.next();
+        
+        const baseMetrics = [
+          Number(row.metrics.impressions),
+          Number(row.metrics.clicks),
+          Number(row.metrics.clicks) / Number(row.metrics.impressions) * 100 || 0,
+          Number(row.metrics.costMicros) / 1000000,
+          Number(row.metrics.conversions),
+          (Number(row.metrics.costMicros) / 1000000) / (Number(row.metrics.conversions) || 1)
+        ];
+  
+        if (type === 'Campaigns') {
+          rows.push([row.campaign.name, ...baseMetrics]);
+        } else if (type === 'Ad Groups') {
+          rows.push([row.campaign.name, row.adGroup.name, ...baseMetrics]);
+        } else if (type === 'Keywords') {
+          rows.push([
+            row.campaign.name,
+            row.adGroup.name,
+            row.adGroupCriterion.keyword.text,
+            row.adGroupCriterion.keyword.matchType,
+            ...baseMetrics
+          ]);
+        }
+      }
+  
+      if (rows.length > 0) {
+        const range = sheets[type].sheet.getRange(2, 1, rows.length, rows[0].length);
+        range.setValues(rows);
+        sheets[type].sheet.autoResizeColumns(1, sheets[type].headers.length);
+      }
+    });
+  
+    Logger.log("Data updated in sheet: " + sheet.getUrl());
+  }

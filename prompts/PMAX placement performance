@@ -1,0 +1,52 @@
+Analyze these Performance Max placement statistics to identify low-quality websites apps and
+channels that are consuming budget without delivering results Note that the data includes a
+campaign column which may show placements either aggregated across 'All Campaigns' or broken
+down by individual campaign names
+Create a structured exclusion plan with these components
+
+High-impact website exclusions
+
+Identify specific low-quality websites with high impression volume but poor conversion rates
+Group similar websites by category e.g. entertainment forums news
+Recommend exact placement exclusions with specific URLs
+Compare performance across different campaigns where applicable
+
+App category analysis
+
+Identify problematic app categories showing poor performance metrics
+Recommend specific app category exclusions rather than individual apps where possible
+Flag any concerning app categories that appear frequently in the data
+Note if certain apps perform differently across campaigns
+
+Domain pattern exclusions
+
+Identify patterns in poor-performing domains e.g. certain TLDs or content types
+Suggest pattern-based exclusion rules that would capture multiple similar placements
+Consider if pattern exclusions should be applied globally or to specific campaigns
+
+Google property assessment
+
+Evaluate performance of Google Owned and Operated placements across campaigns
+Compare performance of Google properties between different campaign objectives
+Recommend any specific Google placement types to exclude or limit
+
+Campaign-specific exclusions
+
+Identify placements that may perform well in some campaigns but poorly in others
+Recommend campaign-specific exclusion strategies where appropriate
+Prioritize exclusions based on campaign performance objectives
+
+Geographic considerations
+
+Note any regional patterns in low-quality placements
+Suggest geo-specific exclusion strategies if applicable to campaign targeting
+
+For each recommendation
+
+Provide the exact exclusion format to implement
+Estimate impact on budget efficiency and potential performance improvement
+Suggest a testing approach to validate the exclusion's impact
+Indicate whether the exclusion should apply to all campaigns or specific ones
+
+Present your recommendations in order of potential impact on campaign performance prioritizing
+exclusions that would preserve the most budget while minimizing potential conversion loss

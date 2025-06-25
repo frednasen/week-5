@@ -1,0 +1,55 @@
+Analyze the provided campaign performance data to recommend specific budget adjustments that will move campaigns toward their optimal spending ranges for maximum profitability.
+
+For each campaign, focus on the relationship between:
+- Current daily/monthly spend vs 'optimalSpendStart' and 'optimalSpendEnd' ranges
+- 'spendDelta' indicating how far from optimal the campaign is spending
+- 'spendStatus' and current profitability to determine budget adjustment priority
+
+BUDGET ADJUSTMENT GUIDELINES:
+- Typical budget changes should be 5-10% of current spend
+- Conservative approach: start with 5-7% adjustments and monitor
+- Aggressive scenarios: up to 15-20% maximum (only for severely misaligned campaigns)
+- Always provide specific dollar amounts or percentages for budget changes
+
+CAMPAIGN PRIORITIZATION BY STATUS:
+
+1. UNDERSPENDING campaigns with positive profit potential:
+   - Calculate the gap between current spend and 'optimalSpendStart'
+   - Recommend specific budget increases (e.g., "Increase daily budget from $50 to $55 (+10%)")
+   - Prioritize campaigns with largest profit upside from additional spend
+   - Suggest phased increases if the gap to optimal is large (>20% current spend)
+
+2. OVERSPENDING campaigns:
+   - Calculate reduction needed to reach 'optimalSpendEnd'
+   - Recommend specific budget decreases (e.g., "Reduce daily budget from $100 to $90 (-10%)")
+   - For severe overspending with negative profit, suggest larger cuts (15-20%)
+   - Prioritize campaigns losing the most profit from excess spend
+
+3. OPTIMAL campaigns:
+   - Recommend maintaining current budgets
+   - Suggest minor adjustments (±5%) if at edge of optimal range
+   - Focus on monitoring for performance changes
+
+4. MAX POTENTIAL REACHED campaigns:
+   - Generally maintain current budgets unless unprofitable
+   - If unprofitable despite max potential, recommend budget decreases
+
+5. CRITICALLY UNPROFITABLE campaigns:
+   - Recommend immediate significant budget reductions (15-20%)
+   - Consider pausing if fundamentally broken
+
+For each recommendation include:
+- Specific current budget → recommended new budget (with dollar amounts)
+- Percentage change and rationale
+- Expected impact on profitability
+- Priority level (High/Medium/Low) based on profit impact
+
+Format as an actionable budget adjustment plan with:
+- Total recommended budget redistributions
+- Implementation timeline (immediate vs phased)
+- Expected aggregate account performance improvement
+
+Focus purely on budget allocation optimization - do not include bidding strategy recommendations.
+
+Campaign Data:
+<DATA>
